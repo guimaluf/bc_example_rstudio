@@ -4,7 +4,7 @@
 setup_env () {
   # Additional environment which could be moved into a module
   # Change these to suit
-  export RSTUDIO_SERVER_IMAGE="/apps/rserver-launcher-centos7.simg"
+  export RSTUDIO_SERVER_IMAGE="${HOME}/.singularity/rserver-launcher-centos7.simg"
   export SINGULARITY_BINDPATH="/etc,/media,/mnt,/opt,/srv,/usr,/var"
   export PATH="$PATH:/usr/lib/rstudio-server/bin"
   export SINGULARITYENV_PATH="$PATH"
@@ -13,6 +13,13 @@ setup_env () {
   export SINGULARITYENV_LD_LIBRARY_PATH="$LD_LIBRARY_PATH"
 }
 setup_env
+
+# Pull image if it doesn't exist
+if [[ ! -f ${RSTUDIO_SERVER_IMAGE} ]]; then
+  # Ensure directory exists
+  mkdir -p $(basedir ${RSTUDIO_SERVER_IMAGE})
+  singularity pull --name ${RSTUDIO_SERVER_IMAGE} shub://OSC/centos7-launcher
+fi
 
 #
 # Start RStudio Server
@@ -59,6 +66,7 @@ singularity run -B "$TMPDIR:/tmp" "$RSTUDIO_SERVER_IMAGE" \
  --auth-none 0 \
  --auth-pam-helper-path "${RSTUDIO_AUTH}" \
  --auth-encrypt-password 0 \
+ --server-data-dir "/tmp" \
  --rsession-path "${RSESSION_WRAPPER_FILE}"
 
-echo 'Singularity as exited...'
+echo 'Singularity has exited...'
