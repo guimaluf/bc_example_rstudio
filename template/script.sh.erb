@@ -11,15 +11,24 @@ setup_env () {
   # In Singularity 3.5.x it became necessary to explicitly pass LD_LIBRARY_PATH
   # to the singularity process
   export SINGULARITYENV_LD_LIBRARY_PATH="$LD_LIBRARY_PATH"
+
+  # Pull image if it doesn't exist
+  if [[ ! -f ${RSTUDIO_SERVER_IMAGE} ]]; then
+    # Ensure directory exists
+    mkdir -p $(basedir ${RSTUDIO_SERVER_IMAGE})
+    singularity pull --name ${RSTUDIO_SERVER_IMAGE} shub://OSC/centos7-launcher
+  fi
+
+  # Load the requested R module (required)
+  module load <%= context.mod_r_version %>
+
+  <%- unless context.mod_extra.blank? -%>
+  # Load additional modules (optional)
+  module load <%= context.mod_extra %>
+  <%- end -%>
+
 }
 setup_env
-
-# Pull image if it doesn't exist
-if [[ ! -f ${RSTUDIO_SERVER_IMAGE} ]]; then
-  # Ensure directory exists
-  mkdir -p $(basedir ${RSTUDIO_SERVER_IMAGE})
-  singularity pull --name ${RSTUDIO_SERVER_IMAGE} shub://OSC/centos7-launcher
-fi
 
 #
 # Start RStudio Server

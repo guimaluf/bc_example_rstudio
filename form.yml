@@ -6,3 +6,16 @@ form:
   - bc_num_hours
   - bc_num_slots
   - bc_email_on_started
+  - mod_extra
+  - mod_r_version
+
+attributes:
+  mod_extra:
+    label: "Additional modules (optional)"
+    help: |
+      <small>Space separated list of additional modules to load</small>
+
+  mod_r_version:
+    label: "R module name"
+    value: "R"
+    required: true
