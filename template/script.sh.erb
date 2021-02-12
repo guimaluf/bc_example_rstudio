@@ -5,7 +5,7 @@ setup_env () {
   # Additional environment which could be moved into a module
   # Change these to suit
   export RSTUDIO_SERVER_IMAGE="${HOME}/.singularity/rserver-launcher-centos7.simg"
-  export SINGULARITY_BINDPATH="/etc,/media,/mnt,/opt,/srv,/usr,/var"
+  export SINGULARITY_BINDPATH="/etc,/media,/mnt,/opt,/srv,/usr"
   export PATH="$PATH:/usr/lib/rstudio-server/bin"
   export SINGULARITYENV_PATH="$PATH"
   # In Singularity 3.5.x it became necessary to explicitly pass LD_LIBRARY_PATH
@@ -15,7 +15,7 @@ setup_env () {
   # Pull image if it doesn't exist
   if [[ ! -f ${RSTUDIO_SERVER_IMAGE} ]]; then
     # Ensure directory exists
-    mkdir -p $(basedir ${RSTUDIO_SERVER_IMAGE})
+    mkdir -p $(dirname ${RSTUDIO_SERVER_IMAGE})
     singularity pull --name ${RSTUDIO_SERVER_IMAGE} shub://OSC/centos7-launcher
   fi
 
@@ -62,15 +62,15 @@ cd "${HOME}"
 
 export TMPDIR="$(mktemp -d)"
 
-mkdir -p "$TMPDIR/rstudio-server"
-python -c 'from uuid import uuid4; print(uuid4())' > "$TMPDIR/rstudio-server/secure-cookie-key"
-chmod 0600 "$TMPDIR/rstudio-server/secure-cookie-key"
+mkdir -p $TMPDIR/{tmp/rstudio-server,var}
+python -c 'from uuid import uuid4; print(uuid4())' > "$TMPDIR/tmp/rstudio-server/secure-cookie-key"
+chmod 0600 "$TMPDIR/tmp/rstudio-server/secure-cookie-key"
 
 set -x
 # Launch the RStudio Server
 echo "Starting up rserver..."
 
-singularity run -B "$TMPDIR:/tmp" "$RSTUDIO_SERVER_IMAGE" \
+singularity run -B "$TMPDIR/tmp:/tmp" -B "$TMPDIR/var:/var" "$RSTUDIO_SERVER_IMAGE" \
  --www-port "${port}" \
  --auth-none 0 \
  --auth-pam-helper-path "${RSTUDIO_AUTH}" \
